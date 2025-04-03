@@ -91,9 +91,9 @@ const BookingForm = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="documents">Documents</SelectItem>
-                    <SelectItem value="small">Small Package (< 3kg)</SelectItem>
+                    <SelectItem value="small">Small Package (less than 3kg)</SelectItem>
                     <SelectItem value="medium">Medium Package (3-10kg)</SelectItem>
-                    <SelectItem value="large">Large Package (> 10kg)</SelectItem>
+                    <SelectItem value="large">Large Package (more than 10kg)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
