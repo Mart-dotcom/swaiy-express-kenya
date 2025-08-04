@@ -1,15 +1,60 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { X, Menu } from "lucide-react";
+import { X, Menu, User, LogOut } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import LoginModal from "./LoginModal";
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signUpOpen, setSignUpOpen] = useState(false);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Logged out successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -30,22 +75,45 @@ const Navbar = () => {
               <li><a href="#how-it-works" className="hover:text-swaiy-primary transition-colors">How It Works</a></li>
               <li><a href="#tracking" className="hover:text-swaiy-primary transition-colors">Track</a></li>
             </ul>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="border-swaiy-primary text-swaiy-primary hover:text-swaiy-primary hover:bg-swaiy-light">
-                  Login
-                </Button>
-              </DialogTrigger>
-              <LoginModal />
-            </Dialog>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-swaiy-primary text-white hover:bg-swaiy-primary/90">
-                  Sign Up
-                </Button>
-              </DialogTrigger>
-              <LoginModal signUp={true} />
-            </Dialog>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="border-swaiy-primary text-swaiy-primary hover:text-swaiy-primary hover:bg-swaiy-light">
+                    <User className="w-4 h-4 mr-2" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="border-swaiy-primary text-swaiy-primary hover:text-swaiy-primary hover:bg-swaiy-light">
+                      Login
+                    </Button>
+                  </DialogTrigger>
+                  <LoginModal onClose={() => setLoginOpen(false)} />
+                </Dialog>
+                <Dialog open={signUpOpen} onOpenChange={setSignUpOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-swaiy-primary text-white hover:bg-swaiy-primary/90">
+                      Sign Up
+                    </Button>
+                  </DialogTrigger>
+                  <LoginModal signUp={true} onClose={() => setSignUpOpen(false)} />
+                </Dialog>
+              </>
+            )}
           </div>
           
           {/* Mobile menu button */}
@@ -68,22 +136,41 @@ const Navbar = () => {
               <li><a href="#tracking" onClick={toggleMenu} className="block py-2 hover:text-swaiy-primary">Track</a></li>
             </ul>
             <div className="mt-4 flex flex-col space-y-2">
-              <Dialog>
-                <DialogTrigger asChild>
+              {user ? (
+                <>
                   <Button variant="outline" className="w-full border-swaiy-primary text-swaiy-primary hover:text-swaiy-primary hover:bg-swaiy-light">
-                    Login
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
                   </Button>
-                </DialogTrigger>
-                <LoginModal />
-              </Dialog>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-swaiy-primary text-white hover:bg-swaiy-primary/90">
-                    Sign Up
+                  <Button 
+                    onClick={handleLogout}
+                    variant="outline" 
+                    className="w-full border-red-500 text-red-500 hover:text-red-500 hover:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
                   </Button>
-                </DialogTrigger>
-                <LoginModal signUp={true} />
-              </Dialog>
+                </>
+              ) : (
+                <>
+                  <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full border-swaiy-primary text-swaiy-primary hover:text-swaiy-primary hover:bg-swaiy-light">
+                        Login
+                      </Button>
+                    </DialogTrigger>
+                    <LoginModal onClose={() => setLoginOpen(false)} />
+                  </Dialog>
+                  <Dialog open={signUpOpen} onOpenChange={setSignUpOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full bg-swaiy-primary text-white hover:bg-swaiy-primary/90">
+                        Sign Up
+                      </Button>
+                    </DialogTrigger>
+                    <LoginModal signUp={true} onClose={() => setSignUpOpen(false)} />
+                  </Dialog>
+                </>
+              )}
             </div>
           </div>
         </div>

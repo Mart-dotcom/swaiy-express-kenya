@@ -1,17 +1,110 @@
 
 import React, { useState } from "react";
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginModalProps {
   signUp?: boolean;
+  onClose?: () => void;
 }
 
-const LoginModal = ({ signUp = false }: LoginModalProps) => {
+const LoginModal = ({ signUp = false, onClose }: LoginModalProps) => {
   const [activeTab, setActiveTab] = useState(signUp ? "register" : "login");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: ""
+  });
+
+  const [registerData, setRegisterData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Logged in successfully!",
+      });
+      onClose?.();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (registerData.password !== registerData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: registerData.email,
+        password: registerData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            first_name: registerData.firstName,
+            last_name: registerData.lastName,
+            phone: registerData.phone,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Account created! Please check your email to verify your account.",
+      });
+      onClose?.();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <DialogContent className="sm:max-w-md">
@@ -19,6 +112,9 @@ const LoginModal = ({ signUp = false }: LoginModalProps) => {
         <DialogTitle className="text-2xl font-bold text-center">
           Welcome to Swaiy Express
         </DialogTitle>
+        <DialogDescription className="text-center text-muted-foreground">
+          Login to your account or create a new one to start booking deliveries
+        </DialogDescription>
       </DialogHeader>
       
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
@@ -28,22 +124,41 @@ const LoginModal = ({ signUp = false }: LoginModalProps) => {
         </TabsList>
         
         <TabsContent value="login" className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="your.email@example.com" />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <a href="#" className="text-xs text-swaiy-primary hover:underline">
-                Forgot password?
-              </a>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="your.email@example.com"
+                value={loginData.email}
+                onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                required
+              />
             </div>
-            <Input id="password" type="password" />
-          </div>
-          <Button type="submit" className="w-full bg-swaiy-primary hover:bg-swaiy-primary/90">
-            Login
-          </Button>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <a href="#" className="text-xs text-swaiy-primary hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+              <Input 
+                id="password" 
+                type="password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                required
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-swaiy-primary hover:bg-swaiy-primary/90"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Login"}
+            </Button>
+          </form>
           <div className="text-center text-sm">
             Don't have an account?{" "}
             <button 
@@ -56,35 +171,79 @@ const LoginModal = ({ signUp = false }: LoginModalProps) => {
         </TabsContent>
         
         <TabsContent value="register" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="John" />
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input 
+                  id="firstName" 
+                  placeholder="John"
+                  value={registerData.firstName}
+                  onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input 
+                  id="lastName" 
+                  placeholder="Doe"
+                  value={registerData.lastName}
+                  onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Doe" />
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input 
+                id="phone" 
+                type="tel" 
+                placeholder="+254 7XX XXX XXX"
+                value={registerData.phone}
+                onChange={(e) => setRegisterData({...registerData, phone: e.target.value})}
+                required
+              />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" type="tel" placeholder="+254 7XX XXX XXX" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="regEmail">Email</Label>
-            <Input id="regEmail" type="email" placeholder="your.email@example.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="regPassword">Password</Label>
-            <Input id="regPassword" type="password" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input id="confirmPassword" type="password" />
-          </div>
-          <Button type="submit" className="w-full bg-swaiy-primary hover:bg-swaiy-primary/90">
-            Create Account
-          </Button>
+            <div className="space-y-2">
+              <Label htmlFor="regEmail">Email</Label>
+              <Input 
+                id="regEmail" 
+                type="email" 
+                placeholder="your.email@example.com"
+                value={registerData.email}
+                onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="regPassword">Password</Label>
+              <Input 
+                id="regPassword" 
+                type="password"
+                value={registerData.password}
+                onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input 
+                id="confirmPassword" 
+                type="password"
+                value={registerData.confirmPassword}
+                onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                required
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-swaiy-primary hover:bg-swaiy-primary/90"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </Button>
+          </form>
           <div className="text-center text-sm">
             Already have an account?{" "}
             <button 
