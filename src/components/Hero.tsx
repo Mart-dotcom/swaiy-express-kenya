@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Package, Shield, Clock } from "lucide-react";
+import africanRiderImage from "@/assets/african-rider-delivery.jpg";
 
 const Hero = () => {
   return (
@@ -48,8 +49,8 @@ const Hero = () => {
           <div className="relative">
             <div className="bg-white rounded-lg p-6 shadow-xl max-w-md mx-auto">
               <img 
-                src="https://img.freepik.com/free-vector/delivery-service-illustrated_23-2148505081.jpg?w=740&t=st=1712166242~exp=1712166842~hmac=7843d7f736c521bbf7a761f54123fa7ee76f49fbee64af7c98ea2a8f9d548a36" 
-                alt="Delivery Illustration" 
+                src={africanRiderImage}
+                alt="African Delivery Rider" 
                 className="w-full h-auto rounded-lg"
               />
               <div className="absolute -bottom-6 -left-6 bg-white rounded-lg p-4 shadow-lg border-l-4 border-swaiy-primary">

@@ -62,8 +62,15 @@ const Navbar = () => {
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <a href="/" className="text-2xl font-bold gradient-text">
-              Swaiy<span className="text-swaiy-dark">Express</span>
+            <a href="/" className="flex items-center gap-3">
+              <img 
+                src="/lovable-uploads/7f636e18-f5cc-4cd1-810b-003746b7e506.png" 
+                alt="Swaiy Express Logo" 
+                className="h-8 w-auto"
+              />
+              <span className="text-2xl font-bold gradient-text hidden sm:block">
+                Swaiy<span className="text-swaiy-dark">Express</span>
+              </span>
             </a>
           </div>
           
