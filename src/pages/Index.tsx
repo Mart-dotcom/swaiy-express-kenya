@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
+import SignupButtons from "@/components/SignupButtons";
 import BookingForm from "@/components/BookingForm";
 import TrackingPreview from "@/components/TrackingPreview";
 import Footer from "@/components/Footer";
@@ -16,6 +17,7 @@ const Index = () => {
         <Hero />
         <Features />
         <HowItWorks />
+        <SignupButtons />
         <BookingForm />
         <TrackingPreview />
       </main>

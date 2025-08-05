@@ -16,6 +16,7 @@ interface LoginModalProps {
 const LoginModal = ({ signUp = false, onClose }: LoginModalProps) => {
   const [activeTab, setActiveTab] = useState(signUp ? "register" : "login");
   const [loading, setLoading] = useState(false);
+  const [userType, setUserType] = useState<"customer" | "rider">("customer");
   const { toast } = useToast();
 
   const [loginData, setLoginData] = useState({
@@ -84,6 +85,7 @@ const LoginModal = ({ signUp = false, onClose }: LoginModalProps) => {
             first_name: registerData.firstName,
             last_name: registerData.lastName,
             phone: registerData.phone,
+            role: userType,
           },
         },
       });
@@ -171,6 +173,42 @@ const LoginModal = ({ signUp = false, onClose }: LoginModalProps) => {
         </TabsContent>
         
         <TabsContent value="register" className="space-y-4 mt-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Account Type</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    userType === "customer" 
+                      ? "border-swaiy-primary bg-swaiy-light" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setUserType("customer")}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📦</div>
+                    <div className="font-semibold">Customer</div>
+                    <div className="text-sm text-gray-600">Send packages</div>
+                  </div>
+                </div>
+                <div 
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    userType === "rider" 
+                      ? "border-swaiy-primary bg-swaiy-light" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setUserType("rider")}
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">🏍️</div>
+                    <div className="font-semibold">Rider</div>
+                    <div className="text-sm text-gray-600">Deliver packages</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
