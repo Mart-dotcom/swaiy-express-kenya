@@ -66,7 +66,7 @@ const Navbar = () => {
               <img 
                 src="/lovable-uploads/7f636e18-f5cc-4cd1-810b-003746b7e506.png" 
                 alt="Swaiy Express Logo" 
-                className="h-8 w-auto"
+                className="h-12 w-auto hover:scale-105 transition-transform duration-300"
               />
               <span className="text-2xl font-bold gradient-text hidden sm:block">
                 Swaiy<span className="text-swaiy-dark">Express</span>
