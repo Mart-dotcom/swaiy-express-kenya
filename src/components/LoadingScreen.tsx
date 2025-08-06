@@ -25,7 +25,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onLoadingComplete }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-swaiy-primary via-swaiy-light to-white z-50 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-primary via-primary/80 to-primary/60 z-50 flex items-center justify-center overflow-hidden">
       {/* Background animation elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/10 rounded-full animate-pulse"></div>
